@@ -8,16 +8,7 @@ import (
 	"reflect"
 )
 
-func _map(list *[]any, funk func(any) any) []any {
-	var new_list []any
-	for _, field := range *list {
-		new_list = append(new_list, funk(field))
-	}
-	return new_list
-}
-
-func main() {
-
+func readFlags() (*string, *string) {
 	var region string
 	var profile string
 	flag.StringVar(&region, "region", "", "AWS region")
@@ -27,8 +18,12 @@ func main() {
 	flag.StringVar(&profile, "p", "", "AWS profile (shorthand)")
 
 	flag.Parse()
+	return &region, &profile
+}
 
-	instances := ec2.DescribeInstances(&region, &profile)
+func main() {
+
+	instances := ec2.DescribeInstances(readFlags())
 
 	var header table.Row
 
