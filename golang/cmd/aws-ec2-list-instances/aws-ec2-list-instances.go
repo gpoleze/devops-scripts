@@ -2,8 +2,9 @@ package main
 
 import (
 	"flag"
-	"github.com/thoas/go-funk"
-	"gitlab.com/gabriel.poleze/ssh-aws/aws/ec2"
+	"github.com/gpoleze/devops-scripts/pkg/aws/ec2"
+	"github.com/jedib0t/go-pretty/v6/table"
+	"os"
 	"reflect"
 )
 
@@ -26,16 +27,32 @@ func main() {
 	flag.StringVar(&profile, "p", "", "AWS profile (shorthand)")
 
 	flag.Parse()
+
 	instances := ec2.DescribeInstances(&region, &profile)
-	header := funk.Map(reflect.VisibleFields(reflect.TypeOf(instances[0])), func(field reflect.StructField) string {
-		return field.Name
-	})
 
-	println("%s", header)
+	var header table.Row
 
-	//t := table.NewWriter()
-	//t.SetOutputMirror(os.Stdout)
-	//t.AppendHeader(table.Row{header})
-	//
-	//t.Render()
+	for _, field := range reflect.VisibleFields(reflect.TypeOf(instances[0])) {
+		header = append(header, field.Name)
+	}
+
+	t := table.NewWriter()
+	t.SetOutputMirror(os.Stdout)
+
+	t.AppendHeader(header)
+
+	for _, instance := range instances {
+		t.AppendRow(table.Row{
+			instance.Name,
+			instance.Id,
+			instance.Type,
+			instance.State,
+			instance.Ami,
+			instance.LaunchTime,
+			instance.PrivateIp,
+			instance.PublicIp,
+		})
+	}
+
+	t.Render()
 }
