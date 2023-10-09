@@ -31,13 +31,12 @@ func main() {
 	region, profile, outputType := readFlags()
 	instances := rds.DescribeInstances(region, profile)
 
-	var header table.Row
-
-	for _, field := range reflect.VisibleFields(reflect.TypeOf(instances[0])) {
-		header = append(header, field.Name)
-	}
-
 	if outputType == nil || *outputType == "table" {
+		var header table.Row
+
+		for _, field := range reflect.VisibleFields(reflect.TypeOf(instances[0])) {
+			header = append(header, field.Name)
+		}
 		t := table.NewWriter()
 		t.SetOutputMirror(os.Stdout)
 
