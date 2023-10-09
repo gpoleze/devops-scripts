@@ -2,12 +2,11 @@ SHELL = /usr/bin/env bash
 
 build:
 	mkdir "build"
-	go build ./cmd/aws-ec2-list-instances/aws-ec2-list-instances.go
-	mv aws-ec2-list-instances build
-
+	find cmd -name "*.go" -exec go build {} \;
+	ls cmd | xargs -n1 -I% mv % build
 clean:
 	go clean
 	rm -r build
 
 install:
-	go install ./cmd/aws-ec2-list-instances/aws-ec2-list-instances.go
+	find cmd -name "*.go" -exec go install {} \;
