@@ -2,9 +2,10 @@ package main
 
 import (
 	"flag"
-	"log"
+	"fmt"
 	"sort"
-
+	"errors"
+	
 	"github.com/gpoleze/devops-scripts/aws/ecr"
 	"github.com/gpoleze/devops-scripts/utils"
 	"github.com/jedib0t/go-pretty/v6/table"
@@ -17,7 +18,7 @@ type arguments struct {
 	RepositoryName *string
 }
 
-func readFlags() arguments {
+func readFlags() (arguments, error) {
 	var region string
 	var profile string
 	var outputType string
@@ -38,7 +39,10 @@ func readFlags() arguments {
 	flag.Parse()
 
 	if repositoryName == "" {
-		log.Fatal("The repository name cannot be empty")
+		return arguments{}, errors.New("the repository name cannot be empty")
+	}
+	if region == "" {
+		return arguments{}, errors.New("the region cannot be empty")
 	}
 
 	return arguments{
@@ -46,7 +50,7 @@ func readFlags() arguments {
 		Profile:        &profile,
 		OutputType:     &outputType,
 		RepositoryName: &repositoryName,
-	}
+	},nil
 }
 
 func itemToTableRow(image ecr.EcrImage) table.Row {
@@ -62,12 +66,23 @@ func itemToTableRow(image ecr.EcrImage) table.Row {
 }
 
 func main() {
-	arguments := readFlags()
+	arguments,err := readFlags()
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+
 	images := ecr.DescribeImages(
 		arguments.Region,
 		arguments.Profile,
 		arguments.RepositoryName,
 	)
+
+	if len(images) == 0 {
+		fmt.Printf("No images found on repository '%s' in '%s' \n", *arguments.RepositoryName, *arguments.Region)
+		return
+	}
+
 	sort.Slice(images, func(i, j int) bool {
 		return images[i].PushedAt.After(images[j].PushedAt)
 	})
