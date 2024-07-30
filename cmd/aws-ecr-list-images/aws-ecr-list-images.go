@@ -2,10 +2,12 @@ package main
 
 import (
 	"flag"
+	"log"
+	"sort"
+
 	"github.com/gpoleze/devops-scripts/aws/ecr"
 	"github.com/gpoleze/devops-scripts/utils"
 	"github.com/jedib0t/go-pretty/v6/table"
-	"log"
 )
 
 type arguments struct {
@@ -66,6 +68,13 @@ func main() {
 		arguments.Profile,
 		arguments.RepositoryName,
 	)
+
+  if image == nil
+    log.Fatalf("The repository %s is empty", arguments.repository)
+
+	sort.Slice(images,func(i, j int) bool {
+		return images[i].PushedAt.Compare(images[j].PushedAt) > 0
+	})
 
 	switch *arguments.OutputType {
 	case "json":

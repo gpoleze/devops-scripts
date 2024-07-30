@@ -36,6 +36,9 @@ func DescribeImages(region *string, profile *string, repositoryName *string) []E
 
 	var images []EcrImage
 
+	if len(res.ImageDetails) == 0
+	  return nil
+
 	for _, image := range res.ImageDetails {
 		ecrImage := EcrImage{
 			Tags:     strings.Join(image.ImageTags, ", "),
