@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/ecr"
+	"sort"
+	"strings"
 )
 
 type EcrRepository struct {
@@ -39,6 +41,10 @@ func DescribeRepositories(region *string, profile *string) []EcrRepository {
 		}
 		repositories = append(repositories, ecrRepo)
 	}
+
+	sort.Slice(repositories, func(i, j int) bool {
+		return strings.Compare(repositories[i].Name, repositories[j].Name) < 0
+	})
 
 	return repositories
 }

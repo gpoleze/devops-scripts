@@ -8,6 +8,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ecr v1.20.1
 	github.com/aws/aws-sdk-go-v2/service/rds v1.55.2
 	github.com/jedib0t/go-pretty/v6 v6.4.7
+	github.com/manifoldco/promptui v0.9.0
 )
 
 require (
@@ -22,6 +23,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.15.6 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.21.5 // indirect
 	github.com/aws/smithy-go v1.15.0 // indirect
+	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
