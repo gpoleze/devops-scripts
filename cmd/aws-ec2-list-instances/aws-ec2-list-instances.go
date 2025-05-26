@@ -27,10 +27,6 @@ func readFlags() (*string, *string, *string) {
 
 	fmt.Printf("===============> regiao: %s", region)
 
-	if region == "" {
-		log.Fatal("O parametro --region é obrigatório")
-	}
-
 	return &region, &profile, &outputType
 }
 
