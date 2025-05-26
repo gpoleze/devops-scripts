@@ -1,9 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gpoleze/devops-scripts/aws/rds"
 	"github.com/gpoleze/devops-scripts/utils"
 	"github.com/jedib0t/go-pretty/v6/table"
+	"os"
 )
 
 func itemToTableRow(instance rds.RDSInstance) table.Row {
@@ -24,7 +26,12 @@ func itemToTableRow(instance rds.RDSInstance) table.Row {
 
 func main() {
 	region, profile, outputType := utils.ReadAwsFlags()
-	instances := rds.DescribeInstances(region, profile)
+	instances, err := rds.DescribeInstances(region, profile)
+
+	if err != nil {
+		fmt.Printf("Error found:\n%s\n", err)
+		os.Exit(1)
+	}
 
 	switch *outputType {
 	case "json":

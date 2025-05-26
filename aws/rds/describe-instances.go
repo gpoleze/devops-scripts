@@ -3,11 +3,9 @@ package rds
 import (
 	"context"
 	"fmt"
-	"time"
-
-	//"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/rds"
+	"time"
 )
 
 type RDSInstance struct {
@@ -24,12 +22,12 @@ type RDSInstance struct {
 	EndpointAddress      string
 }
 
-func DescribeInstances(region *string, profile *string) []RDSInstance {
+func DescribeInstances(region *string, profile *string) ([]RDSInstance, error) {
 	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(*region), config.WithSharedConfigProfile(*profile))
 	if err != nil {
 		fmt.Println("Couldn't load default configuration. Have you set up your AWS account?")
 		fmt.Println(err)
-		return nil
+		return nil, err
 	}
 	rdsClient := rds.NewFromConfig(cfg)
 
@@ -37,7 +35,7 @@ func DescribeInstances(region *string, profile *string) []RDSInstance {
 
 	if err != nil {
 		fmt.Printf("Couldn't list DB instances: %v\n", err)
-		return nil
+		return nil, err
 	}
 
 	var instances = []RDSInstance{}
@@ -67,6 +65,6 @@ func DescribeInstances(region *string, profile *string) []RDSInstance {
 
 	}
 
-	return instances
+	return instances, nil
 
 }
