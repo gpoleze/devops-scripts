@@ -22,7 +22,7 @@ func ListUsersInGroup(groupName, region, profile *string) ([]MyUser, error) {
 	result, err := client.GetGroup(context.TODO(), input)
 	if err != nil {
 		fmt.Println("failed to get group users, %v", err)
-		return nil, errcreati
+		return nil, err
 	}
 
 	users := make([]MyUser, len(result.Users))
