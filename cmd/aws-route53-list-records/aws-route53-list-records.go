@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/service/route53/types"
 	"github.com/gpoleze/devops-scripts/aws/route53"
@@ -38,32 +37,30 @@ func itemToTableRow(record types.ResourceRecordSet) table.Row {
 	}
 }
 
-func readFlags() (arguments, error) {
-	var region string
-	var profile string
-	var outputType string
-	var hostedZoneName string
+func readFlags() arguments {
+	flags := append(AwsFlags, MyFlag{
+		Name:        "hosted-zone-name",
+		ShortName:   "n",
+		Description: "Hosted Zone Name",
+	})
+	parsedFlags, err := ReadFlags(flags)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
-	flag.StringVar(&region, "region", "", "AWS region")
-	flag.StringVar(&region, "r", "", "AWS region (shorthand)")
+	arguments := arguments{
+		Region:         parsedFlags["region"],
+		Profile:        parsedFlags["profile"],
+		HostedZoneName: parsedFlags["hosted-zone-name"],
+		OutputType:     parsedFlags["output-type"],
+	}
 
-	flag.StringVar(&profile, "profile", "", "AWS profile")
-	flag.StringVar(&profile, "p", "", "AWS profile (shorthand)")
+	if *arguments.Region == "" {
+		*arguments.Region = "us-east-1"
+	}
 
-	flag.StringVar(&outputType, "output", "table", "output type (accepted types table and json")
-	flag.StringVar(&outputType, "o", "table", "output type type(shorthand)")
-
-	flag.StringVar(&hostedZoneName, "hosted-zone-name", "", "Hosted Zone Name")
-	flag.StringVar(&hostedZoneName, "n", "", "Hosted Zone Name (shorthand)")
-
-	flag.Parse()
-
-	return arguments{
-		Region:         &region,
-		Profile:        &profile,
-		OutputType:     &outputType,
-		HostedZoneName: &hostedZoneName,
-	}, nil
+	return arguments
 }
 
 var zoneSelectTemplate = &promptui.SelectTemplates{
@@ -93,15 +90,7 @@ func selectItemFrom[T any](items *[]T, label string, template *promptui.SelectTe
 }
 
 func main() {
-	arguments, err := readFlags()
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
-	if *arguments.Region == "" {
-		*arguments.Region = "us-east-1"
-	}
-
+	arguments := readFlags()
 	var zoneId string
 
 	if *arguments.HostedZoneName != "" {

@@ -1,8 +1,6 @@
 package main
 
 import (
-	"errors"
-	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -29,38 +27,6 @@ var repositoriesSelectTemplate = &promptui.SelectTemplates{
 	Details: `
 {{ "Name:" | faint }}       {{ .Name }}
 {{ "Id:" | faint }}         {{ .URI }}`,
-}
-
-func readFlags() (arguments, error) {
-	var region string
-	var profile string
-	var outputType string
-	var repositoryName string
-
-	flag.StringVar(&region, "region", "", "AWS region")
-	flag.StringVar(&region, "r", "", "AWS region (shorthand)")
-
-	flag.StringVar(&profile, "profile", "", "AWS profile")
-	flag.StringVar(&profile, "p", "", "AWS profile (shorthand)")
-
-	flag.StringVar(&outputType, "output", "table", "output type (accepted types table and json")
-	flag.StringVar(&outputType, "o", "table", "output type type(shorthand)")
-
-	flag.StringVar(&repositoryName, "repository-name", "", "ECR Repository Name")
-	flag.StringVar(&repositoryName, "n", "", "ECR Repository Name (shorthand)")
-
-	flag.Parse()
-
-	if region == "" {
-		return arguments{}, errors.New("the region cannot be empty")
-	}
-
-	return arguments{
-		Region:         &region,
-		Profile:        &profile,
-		OutputType:     &outputType,
-		RepositoryName: &repositoryName,
-	}, nil
 }
 
 func itemToTableRow(image ecr.EcrImage) table.Row {
@@ -92,11 +58,7 @@ func selectItemFrom[T any](items *[]T, label string, template *promptui.SelectTe
 }
 
 func main() {
-	arguments, err := readFlags()
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
+	arguments := readArguments()
 
 	if *arguments.RepositoryName == "" {
 		repositories := ecr.DescribeRepositories(
@@ -130,4 +92,25 @@ func main() {
 	default:
 		utils.BuildTable(images, itemToTableRow)
 	}
+}
+
+func readArguments() arguments {
+	flags := append(utils.AwsFlags, utils.MyFlag{
+		Name:        "repository",
+		ShortName:   "n",
+		Description: "The name of the ECR repository to list images from.",
+	})
+	parsedFlags, err := utils.ReadFlags(flags)
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+
+	arguments := arguments{
+		Region:         parsedFlags["region"],
+		Profile:        parsedFlags["profile"],
+		RepositoryName: parsedFlags["repository"],
+		OutputType:     parsedFlags["output-type"],
+	}
+	return arguments
 }
