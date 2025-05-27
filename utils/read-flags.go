@@ -1,20 +1,64 @@
 package utils
 
-import "flag"
+import (
+	"errors"
+	"flag"
+	"fmt"
+)
+
+type MyFlag struct {
+	Name        string
+	ShortName   string
+	Description string
+	Value       string
+	Required    bool
+}
+
+type ParsedFlags map[string]*string
+
+var AwsFlags = []MyFlag{
+	{
+		Name:        "region",
+		ShortName:   "r",
+		Description: "AWS region",
+	},
+	{
+		Name:        "profile",
+		ShortName:   "p",
+		Description: "AWS profile",
+	},
+	{
+		Name:        "output-type",
+		ShortName:   "o",
+		Description: "Output type (table or json)",
+	},
+}
 
 func ReadAwsFlags() (*string, *string, *string) {
-	var region string
-	var profile string
-	var outputType string
-	flag.StringVar(&region, "region", "", "AWS region")
-	flag.StringVar(&region, "r", "", "AWS region (shorthand)")
+	ReadFlags(AwsFlags)
+	return &AwsFlags[0].Value, &AwsFlags[1].Value, &AwsFlags[2].Value
+}
 
-	flag.StringVar(&profile, "profile", "", "AWS profile")
-	flag.StringVar(&profile, "p", "", "AWS profile (shorthand)")
-
-	flag.StringVar(&outputType, "o", "table", "output type type(shorthand)")
-	flag.StringVar(&outputType, "output", "table", "output type (accepted types table and json")
-
+func ReadFlags(flags []MyFlag) (ParsedFlags, error) {
+	parsedFlags := make(map[string]*string)
+	for i := range flags {
+		flag.StringVar(&(flags[i]).Value, flags[i].Name, "", flags[i].Description)
+		if flags[i].ShortName != "" {
+			flag.StringVar(&(flags[i]).Value, flags[i].ShortName, "", flags[i].Description+"(shorthand)")
+		}
+		parsedFlags[flags[i].Name] = &flags[i].Value
+	}
 	flag.Parse()
-	return &region, &profile, &outputType
+
+	var errorMessage string
+	for _, myFlag := range flags {
+		if myFlag.Required && myFlag.Value == "" {
+			errorMessage += fmt.Sprintf("Error: %s is required\n", myFlag.Name)
+		}
+	}
+	if errorMessage != "" {
+		return ParsedFlags{}, errors.New(errorMessage)
+	}
+
+	return parsedFlags, nil
 }
