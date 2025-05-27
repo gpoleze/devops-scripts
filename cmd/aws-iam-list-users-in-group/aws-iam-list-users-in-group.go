@@ -8,28 +8,47 @@ import (
 	"os"
 )
 
-func main() {
-	myFlags := append(utils.AwsFlags, utils.MyFlag{
+type parameters struct {
+	groupName  *string
+	region     *string
+	profile    *string
+	outputType *string
+}
+
+func readParameters() parameters {
+	var myFlags utils.MyFlags = append(utils.AwsFlags, utils.MyFlag{
 		Name:        "group-name",
 		Description: "IAM Group Name",
 		ShortName:   "g",
 		Required:    true,
 	})
 
+	myFlags.UpdateDefaultValue("region", "us-east-1")
+
 	parsedFlags, err := utils.ReadFlags(myFlags)
 	if err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
+	return parameters{
+		groupName:  parsedFlags["group-name"],
+		region:     parsedFlags["region"],
+		profile:    parsedFlags["profile"],
+		outputType: parsedFlags["output-type"],
+	}
+}
 
-	users, err := iam.ListUsersInGroup(parsedFlags["group-name"], parsedFlags["region"], parsedFlags["profile"])
+func main() {
+	parameters := readParameters()
+
+	users, err := iam.ListUsersInGroup(parameters.groupName, parameters.region, parameters.profile)
 
 	if err != nil {
 		fmt.Printf("Error found:\n%s\n", err)
 		os.Exit(1)
 
 	}
-	switch *parsedFlags["output-type"] {
+	switch *parameters.outputType {
 	case "json":
 		utils.PrintJson(users)
 	case "table":

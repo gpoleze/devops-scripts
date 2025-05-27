@@ -7,11 +7,6 @@ import (
 	"github.com/jedib0t/go-pretty/v6/table"
 )
 
-//type MyHostedZone struct {
-//	Name string
-//	Id   string
-//}
-
 func itemToTableRow(zone types.HostedZone) table.Row {
 	return table.Row{
 		*zone.Name,

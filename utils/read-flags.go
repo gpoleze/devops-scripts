@@ -4,14 +4,25 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"slices"
 )
 
 type MyFlag struct {
-	Name        string
-	ShortName   string
-	Description string
-	Value       string
-	Required    bool
+	Name         string
+	ShortName    string
+	Description  string
+	Value        string
+	Required     bool
+	DefaultValue string
+}
+
+type MyFlags []MyFlag
+
+func (mfs MyFlags) UpdateDefaultValue(name, value string) {
+	index := slices.IndexFunc(mfs, func(f MyFlag) bool { return f.Name == name })
+	mf := mfs[index]
+	mf.DefaultValue = value
+	mfs[index] = mf
 }
 
 type ParsedFlags map[string]*string
@@ -42,9 +53,9 @@ func ReadAwsFlags() (*string, *string, *string) {
 func ReadFlags(flags []MyFlag) (ParsedFlags, error) {
 	parsedFlags := make(map[string]*string)
 	for i := range flags {
-		flag.StringVar(&(flags[i]).Value, flags[i].Name, "", flags[i].Description)
+		flag.StringVar(&(flags[i]).Value, flags[i].Name, flags[i].DefaultValue, flags[i].Description)
 		if flags[i].ShortName != "" {
-			flag.StringVar(&(flags[i]).Value, flags[i].ShortName, "", flags[i].Description+"(shorthand)")
+			flag.StringVar(&(flags[i]).Value, flags[i].ShortName, flags[i].DefaultValue, flags[i].Description+"(shorthand)")
 		}
 		parsedFlags[flags[i].Name] = &flags[i].Value
 	}
