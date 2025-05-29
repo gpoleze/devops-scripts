@@ -2,8 +2,8 @@ package utils
 
 import (
 	"errors"
-	"flag"
 	"fmt"
+	"github.com/spf13/pflag"
 	"slices"
 )
 
@@ -53,13 +53,10 @@ func ReadAwsFlags() (*string, *string, *string) {
 func ReadFlags(flags []MyFlag) (ParsedFlags, error) {
 	parsedFlags := make(map[string]*string)
 	for i := range flags {
-		flag.StringVar(&(flags[i]).Value, flags[i].Name, flags[i].DefaultValue, flags[i].Description)
-		if flags[i].ShortName != "" {
-			flag.StringVar(&(flags[i]).Value, flags[i].ShortName, flags[i].DefaultValue, flags[i].Description+"(shorthand)")
-		}
+		pflag.StringVarP(&(flags[i]).Value, flags[i].Name, flags[i].ShortName, flags[i].DefaultValue, flags[i].Description+"(shorthand)")
 		parsedFlags[flags[i].Name] = &flags[i].Value
 	}
-	flag.Parse()
+	pflag.Parse()
 
 	var errorMessage string
 	for _, myFlag := range flags {
